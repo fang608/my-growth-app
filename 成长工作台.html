@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#9DB5A0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>我的成长工作台</title>
+<style>
+  :root {
+    --bg: #F2F0E9;
+    --sidebar: #9DB5A0;
+    --sidebar-text: #FFFFFF;
+    --card: #FFFBF5;
+    --card-border: #F0EBE3;
+    --text: #5C5C5C;
+    --text-light: #8A8A8A;
+    --pink: #FADADD;
+    --pink-dark: #E8B4B8;
+    --blue: #E0F2F1;
+    --blue-dark: #B2DFDB;
+    --green: #C8E6C9;
+    --yellow: #FFF9C4;
+    --shadow: rgba(0,0,0,0.06);
+    --radius: 20px;
+    --radius-sm: 14px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+  /* Sidebar */
+  .sidebar {
+    width: 72px;
+    background: var(--sidebar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 8px;
+    flex-shrink: 0;
+    transition: transform .3s;
+    z-index: 100;
+  }
+  .sidebar .brand {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 8px;
+  }
+  .sidebar .nav-item {
+    width: 52px; height: 52px;
+    border-radius: var(--radius-sm);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+    color: rgba(255,255,255,0.9);
+    font-size: 10px;
+    cursor: pointer;
+    position: relative;
+    transition: all .2s;
+  }
+  .sidebar .nav-item .icon { font-size: 22px; line-height:1; }
+  .sidebar .nav-item.active, .sidebar .nav-item:active {
+    background: rgba(255,255,255,0.25);
+    transform: scale(0.95);
+  }
+  .sidebar .nav-item .edit-btn {
+    position: absolute; top:2px; right:2px;
+    width:14px; height:14px; background:rgba(255,255,255,0.6);
+    border-radius:50%; font-size:9px; display:none; align-items:center; justify-content:center;
+    color:#555;
+  }
+  .sidebar .nav-item:hover .edit-btn { display:flex; }
+  .sidebar .add-cat {
+    margin-top: auto;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #fff; cursor: pointer;
+  }
+  .sidebar .fire-streak {
+    margin-top: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    color: rgba(255,255,255,0.85);
+    font-size: 10px;
+  }
+  .sidebar .fire-streak .fire-icon { font-size: 24px; }
+
+  /* Main */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .header .date-chip {
+    background: var(--card);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text-light);
+    box-shadow: 0 2px 8px var(--shadow);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .header .menu-btn {
+    display: none;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--card);
+    align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .section-title {
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 4px; letter-spacing: -0.5px;
+  }
+  .section-sub {
+    font-size: 13px; color: var(--text-light); margin-bottom: 16px;
+  }
+
+  /* Cards Grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .task-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: 0 4px 16px var(--shadow);
+    border: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .task-card::before {
+    content: ''; position: absolute; top:0; left:0; right:0; height: 4px;
+    background: var(--accent, var(--pink));
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .task-card.blue::before { background: var(--blue-dark); }
+  .task-card.pink::before { background: var(--pink-dark); }
+  .task-card.green::before { background: #81C784; }
+  .task-card.yellow::before { background: #FDD835; }
+  .task-card .card-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .task-card .card-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--accent-bg, var(--pink));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .task-card .card-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    background: var(--accent-bg, var(--pink));
+    color: var(--text);
+    font-weight: 500;
+  }
+  .task-card .card-title {
+    font-size: 16px; font-weight: 700;
+  }
+  .task-card .card-desc {
+    font-size: 12px; color: var(--text-light);
+    line-height: 1.4;
+  }
+  .task-card .progress-wrap {
+    margin-top: 2px;
+  }
+  .task-card .progress-bar {
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .task-card .progress-bar .fill {
+    height: 100%;
+    background: var(--accent, var(--pink-dark));
+    border-radius: 3px;
+    transition: width .4s ease;
+  }
+  .task-card .progress-text {
+    font-size: 11px; color: var(--text-light);
+    display: flex; justify-content: space-between;
+  }
+
+  /* Detail View */
+  .detail-view { display: none; }
+  .detail-view.active { display: block; animation: fadeIn .3s; }
+  @keyframes fadeIn { from {opacity:0; transform: translateY(10px);} to {opacity:1;} }
+
+  .detail-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .detail-header .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--card);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .detail-header h2 { font-size: 18px; }
+
+  .task-list {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .task-item {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    box-shadow: 0 2px 10px var(--shadow);
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1px solid var(--card-border);
+  }
+  .task-item .checkbox {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--text-light);
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .task-item .checkbox.checked {
+    background: var(--sidebar);
+    border-color: var(--sidebar);
+    color: #fff;
+    font-size: 13px;
+  }
+  .task-item .task-body { flex: 1; }
+  .task-item .task-body .task-name {
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 4px;
+    transition: all .2s;
+  }
+  .task-item .task-body .task-name.done {
+    text-decoration: line-through;
+    color: var(--text-light);
+  }
+  .task-item .task-body .task-note {
+    font-size: 12px; color: var(--text-light);
+    line-height: 1.5;
+  }
+  .task-item .task-body .task-meta {
+    font-size: 11px; color: var(--text-light);
+    margin-top: 6px;
+    display: flex; gap: 8px;
+  }
+  .task-item .task-body .task-meta span {
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  /* Timeline */
+  .timeline-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px var(--shadow);
+    border: 1px solid var(--card-border);
+  }
+  .timeline-title {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .timeline-slots {
+    display: flex; gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .timeline-slot {
+    min-width: 110px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    text-align: center;
+    border: 2px solid transparent;
+  }
+  .timeline-slot.active {
+    border-color: var(--sidebar);
+    background: #fff;
+  }
+  .timeline-slot .time { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+  .timeline-slot .slot-name { font-size: 13px; font-weight: 600; }
+
+  /* Weekly Focus */
+  .focus-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: 0 4px 16px var(--shadow);
+    border: 1px solid var(--card-border);
+  }
+  .focus-title {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .focus-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .focus-item:last-child { border-bottom: none; }
+  .focus-item .check { font-size: 18px; margin-top: 2px; }
+
+  /* Add Task FAB */
+  .fab {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink-dark), var(--blue-dark));
+    color: #fff;
+    font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    cursor: pointer;
+    z-index: 50;
+    border: none;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 100%; max-width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 16px; }
+  .modal input, .modal textarea, .modal select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: var(--bg);
+    font-size: 15px;
+    margin-bottom: 12px;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .modal textarea { min-height: 80px; resize: vertical; }
+  .modal .modal-actions {
+    display: flex; gap: 10px; margin-top: 4px;
+  }
+  .modal .btn {
+    flex: 1; padding: 12px;
+    border-radius: 12px; border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .modal .btn-primary { background: var(--sidebar); color: #fff; }
+  .modal .btn-secondary { background: var(--bg); color: var(--text); }
+  .modal .btn-danger { background: var(--pink); color: #fff; }
+
+  /* Overlay sidebar on mobile */
+  .sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+    display: none; z-index: 90;
+  }
+  .sidebar-overlay.active { display: block; }
+
+  @media (max-width: 640px) {
+    .sidebar {
+      position: fixed; left: 0; top: 0; bottom: 0;
+      transform: translateX(-100%);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .header .menu-btn { display: flex; }
+    .cards-grid { gap: 10px; }
+    .task-card { padding: 12px; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="brand">🌱</div>
+  <div id="categoryList"></div>
+  <div class="add-cat" onclick="openCategoryModal()">+</div>
+  <div class="fire-streak">
+    <div class="fire-icon">🔥</div>
+    <div id="streakCount">0</div>
+    <div>连续天数</div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main" id="main">
+  <!-- Dashboard View -->
+  <div id="dashboardView">
+    <div class="header">
+      <div class="date-chip" id="dateChip">📅 加载中...</div>
+      <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+    </div>
+    <div class="section-title">今日总览</div>
+    <div class="section-sub" id="planSub">三项计划并行推进</div>
+    <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="timeline-section">
+      <div class="timeline-title">⏰ 每日时间轴</div>
+      <div class="timeline-slots" id="timelineSlots"></div>
+    </div>
+
+    <div class="focus-section">
+      <div class="focus-title">📌 本周重点提醒</div>
+      <div id="focusList"></div>
+    </div>
+  </div>
+
+  <!-- Detail View -->
+  <div class="detail-view" id="detailView">
+    <div class="detail-header">
+      <div class="back-btn" onclick="showDashboard()">←</div>
+      <h2 id="detailTitle">任务详情</h2>
+    </div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+</main>
+
+<!-- FAB -->
+<button class="fab" onclick="openTaskModal()">+</button>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <h3 id="taskModalTitle">添加任务</h3>
+    <input type="text" id="taskName" placeholder="任务名称（如：看视频15分钟）">
+    <textarea id="taskNote" placeholder="详细说明、学习资源、步骤等..."></textarea>
+    <select id="taskCategory">
+      <option value="">选择分类</option>
+    </select>
+    <input type="date" id="taskDate">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('taskModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveTask()">保存</button>
+    </div>
+    <div class="modal-actions" id="deleteTaskBtn" style="display:none; margin-top:8px;">
+      <button class="btn btn-danger" onclick="deleteCurrentTask()">删除此任务</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal">
+    <h3 id="catModalTitle">添加分类</h3>
+    <input type="text" id="catName" placeholder="分类名称（如：健身打卡）">
+    <input type="text" id="catIcon" placeholder="图标 emoji（如：💪）">
+    <select id="catColor">
+      <option value="pink">浅粉色</option>
+      <option value="blue">浅蓝色</option>
+      <option value="green">浅绿色</option>
+      <option value="yellow">浅黄色</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('catModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveCategory()">保存</button>
+    </div>
+    <div class="modal-actions" id="deleteCatBtn" style="display:none; margin-top:8px;">
+      <button class="btn btn-danger" onclick="deleteCurrentCategory()">删除此分类</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== Data ==========
+const defaultData = {
+  categories: [
+    { id: 'write', name: '每日练笔', icon: '✍️', color: 'pink', desc: '300-500字写作训练', total: 7 },
+    { id: 'finance', name: '金融小白', icon: '💰', color: 'blue', desc: '零基础学金融', total: 8 },
+    { id: 'edit', name: '剪辑入门', icon: '🎬', color: 'green', desc: '剪映从0到1', total: 8 }
+  ],
+  tasks: [
+    // Writing - Day 1-7
+    { id:'w1', catId:'write', name:'Day1：本来不想做但做完挺开心的事', note:'要求：300-500字，必须包含一个动作细节和一句对话。时间：15-20分钟。', date:'2026-08-05', completed:false },
+    { id:'w2', catId:'write', name:'Day2：一个舍不得扔的旧物件', note:'要求：描写这个物件的外观+它背后的故事，不用交代背景，直接写物件。', date:'2026-08-06', completed:false },
+    { id:'w3', catId:'write', name:'Day3：一种让你回到某个场景的味道', note:'要求：通过味道写场景，用具体画面代替"我很怀念"。', date:'2026-08-07', completed:false },
+    { id:'w4', catId:'write', name:'Day4：今天听到的一句普通的话', note:'要求：写这句话为什么让你停了一下，写出前后心理变化。', date:'2026-08-08', completed:false },
+    { id:'w5', catId:'write', name:'Day5：一次"等"', note:'要求：等人/等车/等消息，写出等待过程中的心理时间。', date:'2026-08-09', completed:false },
+    { id:'w6', catId:'write', name:'Day6：用第二人称劝一个焦虑的朋友', note:'要求：不用"你要"，用"你可以"开头，写3句话。', date:'2026-08-10', completed:false },
+    { id:'w7', catId:'write', name:'Day7：描述房间最旧的东西', note:'要求：不要写"旧"这个字，用细节让读者感受到旧。', date:'2026-08-11', completed:false },
+    // Finance - Week 1-8
+    { id:'f1', catId:'finance', name:'第1周：信用卡与借记卡', note:'学什么：本质区别、账单日/还款日、最低还款的坑。\n从哪学：B站"老丁是个生意人"《信用卡入门》第1-2集。\n分几步：①看视频15分钟 ②确认自己绑的卡类型 ③回答思考题。\n思考题：账单1000，最低还100，剩下900一个月后多还多少？', date:'2026-08-11', completed:false },
+    { id:'f2', catId:'finance', name:'第2周：复利与单利', note:'学什么：复利公式不用背，理解"利滚利"在存款和贷款中的不同效果。\n从哪学：《小狗钱钱》第3-4章（微信读书免费）或B站"复利效应可视化"。\n分几步：①读20分钟 ②计算器算：1万元，年利率3%，复利10年后是多少？③回答思考题。\n思考题：为什么贷款复利让你多还钱，存款复利却让你多赚钱？', date:'2026-08-18', completed:false },
+    { id:'f3', catId:'finance', name:'第3周：通货膨胀', note:'学什么：CPI是什么、为什么钱会越来越不值钱、跑赢通胀的方法。\n从哪学：《富爸爸穷爸爸》第1章 或 B站"通胀10分钟看懂"。\n分几步：①学习20分钟 ②查中国近5年通胀率 ③回答思考题。\n思考题：银行定期利率2%，通胀3%，存10万一年实际赚还是亏？', date:'2026-08-25', completed:false },
+    { id:'f4', catId:'finance', name:'第4周：基金入门', note:'学什么：货币基金、债券基金、股票基金的区别，指数基金为什么适合小白。\n从哪学：B站"基金入门  螺丝钉" 或 微信读书《指数基金投资指南》第1-2章。\n分几步：①学习20分钟 ②打开支付宝看基金排行，分辨三种基金 ③回答思考题。\n思考题：为什么指数基金被称为"懒人理财"？', date:'2026-09-01', completed:false },
+    { id:'f5', catId:'finance', name:'第5周：股票基础（只看不动）', note:'学什么：股票的本质、PE/PB指标、为什么小白不建议炒股。\n从哪学：B站"股票入门  李自然说" 或 《小狗钱钱》相关章节。\n分几步：①学习20分钟 ②打开同花顺/东方财富看一只股票的PE ③回答思考题。\n思考题：为什么"不懂不投"是铁律？', date:'2026-09-08', completed:false },
+    { id:'f6', catId:'finance', name:'第6周：资产配置', note:'学什么：鸡蛋分篮子、4321法则、紧急备用金。\n从哪学：B站"资产配置  也谈钱" 或 《穷爸爸富爸爸》相关章节。\n分几步：①学习20分钟 ②计算自己每月支出，算出需要多少紧急备用金 ③回答思考题。\n思考题：如果你有5万存款，按4321法则分别放多少？', date:'2026-09-15', completed:false },
+    { id:'f7', catId:'finance', name:'第7周：保险基础', note:'学什么：重疾险/医疗险/意外险的区别，为什么先保大人再保小孩。\n从哪学：B站"保险科普  深蓝保" 或 微信读书《你的第一本保险指南》第1章。\n分几步：①学习20分钟 ②列出自己已有的保险 ③回答思考题。\n思考题：重疾险和医疗险有什么区别，各解决什么问题？', date:'2026-09-22', completed:false },
+    { id:'f8', catId:'finance', name:'第8周：个人财务体检', note:'学什么：记账方法、资产负债表、净资产计算。\n从哪学：B站"记账  木子理书" 或 使用随手记/钱迹APP。\n分几步：①学习记账方法 ②记录本周每一笔支出 ③填写个人资产负债表。\n思考题：你的净资产是正还是负？如果负，最先应该砍掉哪笔支出？', date:'2026-09-29', completed:false },
+    // Editing - Week 1-8
+    { id:'e1', catId:'edit', name:'第1周：剪映安装与界面熟悉', note:'学什么：下载剪映专业版、认识时间轴/轨道/素材库/导出按钮。\n从哪学：B站"GenJi是真想教会你"《剪映专业版入门》第1集。\n分几步：①官网下载安装 ②不导入素材，纯点击熟悉按钮 ③导入10秒视频尝试播放。\n作业：把10秒视频原样导出，命名"第1周练习"。', date:'2026-08-09', completed:false },
+    { id:'e2', catId:'edit', name:'第2周：分割与删除', note:'学什么：剃刀工具、分割点选择、删除多余片段。\n从哪学：B站"剪映分割删除教程"（搜索前3个视频任选）。\n分几步：①导入30秒视频 ②5秒处分割，删除中间5秒 ③前后拼起，导出看流畅度。\n作业：把30秒视频剪成15秒精华版。', date:'2026-08-16', completed:false },
+    { id:'e3', catId:'edit', name:'第3周：转场与节奏', note:'学什么：叠化/闪白/跳切等基本转场、音乐踩点。\n从哪学：B站"剪映转场教程" 或 剪映官方"如何踩点"。\n分几步：①导入两段视频，中间加叠化转场 ②添加背景音乐，把切换点对准鼓点 ③导出15秒短视频。\n作业：做一段"起床→出门"15秒快剪，至少用2种转场。', date:'2026-08-23', completed:false },
+    { id:'e4', catId:'edit', name:'第4周：字幕与花字', note:'学什么：自动识别字幕、花字样式、字幕动画、关键位置加字幕。\n从哪学：B站"剪映字幕教程" 或 剪映官方教程。\n分几步：①导入一段带说话的视频 ②自动识别字幕 ③修改错别字，加2处花字强调。\n作业：给一段1分钟视频配完整字幕，至少3处花字。', date:'2026-08-30', completed:false },
+    { id:'e5', catId:'edit', name:'第5周：调色基础', note:'学什么：滤镜选择、手动调色（亮度/对比度/饱和度）、LUT预设。\n从哪学：B站"剪映调色教程" 或 剪映官方"调色入门"。\n分几步：①导入一段光线不好的视频 ②尝试3种不同滤镜 ③手动微调亮度对比度。\n作业：同一段视频导出3个不同色调版本。', date:'2026-09-06', completed:false },
+    { id:'e6', catId:'edit', name:'第6周：音效与配音', note:'学什么：音效库使用、配音录制、降噪、音量平衡。\n从哪学：B站"剪映音效配音教程" 或 剪映官方教程。\n分几步：①给视频添加3个音效（转场音/环境音/强调音） ②录制一段配音 ③调整音量平衡。\n作业：做一段15秒视频，含配音+音效，音量舒适。', date:'2026-09-13', completed:false },
+    { id:'e7', catId:'edit', name:'第7周：关键帧动画', note:'学什么：关键帧原理、画面缩放/位移/旋转动画、文字动画。\n从哪学：B站"剪映关键帧教程" 或 剪映官方"关键帧入门"。\n分几步：①让一个图片从大到小 ②让文字从左侧飞入 ③组合两个关键帧做复杂动画。\n作业：做一段5秒片头，含关键帧动画。', date:'2026-09-20', completed:false },
+    { id:'e8', catId:'edit', name:'第8周：完整作品', note:'学什么：整合前面所有技能，做一支60秒Vlog。\n从哪学：无，用前面所学。\n分几步：①写30秒分镜脚本 ②拍摄/收集素材 ③剪辑（含分割、转场、字幕、调色、音效、关键帧）④导出。\n作业：完成人生第一支60秒Vlog，题材不限。', date:'2026-09-27', completed:false }
+  ],
+  streak: 0,
+  lastCheck: null
+};
+
+function loadData() {
+  const raw = localStorage.getItem('growthData');
+  if (!raw) return JSON.parse(JSON.stringify(defaultData));
+  return JSON.parse(raw);
+}
+function saveData() { localStorage.setItem('growthData', JSON.stringify(data)); }
+let data = loadData();
+let currentCat = null;
+let editingTaskId = null;
+let editingCatId = null;
+
+// ========== Init ==========
+function init() {
+  updateDate();
+  renderCategories();
+  renderCards();
+  renderTimeline();
+  renderFocus();
+  updateStreak();
+}
+function updateDate() {
+  const d = new Date();
+  const week = ['日','一','二','三','四','五','六'];
+  document.getElementById('dateChip').innerHTML = `📅 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${week[d.getDay()]}`;
+}
+
+// ========== Sidebar / Categories ==========
+function renderCategories() {
+  const box = document.getElementById('categoryList');
+  box.innerHTML = '';
+  data.categories.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'nav-item' + (currentCat===cat.id ? ' active' : '');
+    div.innerHTML = `<div class="icon">${cat.icon}</div><div>${cat.name}</div><div class="edit-btn" onclick="event.stopPropagation();editCategory('${cat.id}')">✎</div>`;
+    div.onclick = () => { currentCat = cat.id; renderCategories(); showDetail(cat.id); };
+    box.appendChild(div);
+  });
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+
+// ========== Dashboard Cards ==========
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  data.categories.forEach(cat => {
+    const catTasks = data.tasks.filter(t => t.catId === cat.id && isThisWeek(t.date));
+    const done = catTasks.filter(t => t.completed).length;
+    const total = catTasks.length || 1;
+    const pct = Math.round(done/total*100);
+    const card = document.createElement('div');
+    card.className = `task-card ${cat.color}`;
+    card.style.setProperty('--accent', getColor(cat.color));
+    card.style.setProperty('--accent-bg', getColorLight(cat.color));
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-icon">${cat.icon}</div>
+        <div class="card-badge">${done===total && total>0 ? '已完成' : (done>0 ? '进行中' : '待开始')}</div>
+      </div>
+      <div class="card-title">${cat.name}</div>
+      <div class="card-desc">${cat.desc || ''}</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+        <div class="progress-text"><span>${done} 项已完成</span><span>/ ${total} 项</span></div>
+      </div>
+    `;
+    card.onclick = () => { currentCat = cat.id; renderCategories(); showDetail(cat.id); };
+    grid.appendChild(card);
+  });
+}
+function getColor(c) {
+  const map = { pink:'#E8B4B8', blue:'#80CBC4', green:'#81C784', yellow:'#FDD835' };
+  return map[c] || map.pink;
+}
+function getColorLight(c) {
+  const map = { pink:'#FADADD', blue:'#E0F2F1', green:'#C8E6C9', yellow:'#FFF9C4' };
+  return map[c] || map.pink;
+}
+function isThisWeek(dateStr) {
+  const t = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.abs(t - now);
+  return diff < 14 * 86400000; // show tasks within 14 days
+}
+
+// ========== Timeline ==========
+function renderTimeline() {
+  const slots = [
+    { time:'19:00-19:30', name:'每日练笔', icon:'✍️', active:true },
+    { time:'周一 19:00', name:'金融一课', icon:'💰', active:false },
+    { time:'周六 10:00', name:'剪辑练习', icon:'🎬', active:false },
+    { time:'碎片时间', name:'复习回顾', icon:'📖', active:false }
+  ];
+  const box = document.getElementById('timelineSlots');
+  box.innerHTML = slots.map(s => `
+    <div class="timeline-slot ${s.active?'active':''}">
+      <div class="time">${s.time}</div>
+      <div class="slot-name">${s.icon} ${s.name}</div>
+    </div>
+  `).join('');
+}
+
+// ========== Focus ==========
+function renderFocus() {
+  const items = [
+    '写作：每天19点准时开写，先完成再完美',
+    '金融：每周一学完必须回答3道思考题',
+    '剪辑：每周六至少动手操作20分钟'
+  ];
+  document.getElementById('focusList').innerHTML = items.map(i => `
+    <div class="focus-item"><span class="check">📌</span><div>${i}</div></div>
+  `).join('');
+}
+
+// ========== Detail View ==========
+function showDetail(catId) {
+  document.getElementById('dashboardView').style.display = 'none';
+  document.getElementById('detailView').classList.add('active');
+  const cat = data.categories.find(c => c.id === catId);
+  document.getElementById('detailTitle').innerHTML = `${cat.icon} ${cat.name}`;
+  renderTaskList(catId);
+}
+function showDashboard() {
+  document.getElementById('detailView').classList.remove('active');
+  document.getElementById('dashboardView').style.display = 'block';
+  currentCat = null;
+  renderCategories();
+  renderCards();
+}
+function renderTaskList(catId) {
+  const box = document.getElementById('taskList');
+  const tasks = data.tasks.filter(t => t.catId === catId).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if (tasks.length === 0) {
+    box.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">暂无任务，点击右下角 + 添加</div>';
+    return;
+  }
+  box.innerHTML = tasks.map(t => `
+    <div class="task-item" onclick="openTaskModal('${t.id}')">
+      <div class="checkbox ${t.completed?'checked':''}" onclick="event.stopPropagation();toggleTask('${t.id}')">
+        ${t.completed?'✓':''}
+      </div>
+      <div class="task-body">
+        <div class="task-name ${t.completed?'done':''}">${t.name}</div>
+        <div class="task-note">${formatNote(t.note)}</div>
+        <div class="task-meta"><span>📅 ${t.date}</span>${t.completed?'<span>✅ 已完成</span>':''}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function formatNote(note) {
+  if (!note) return '';
+  return note.replace(/\n/g, '<br>').substring(0, 120) + (note.length>120?'...':'');
+}
+function toggleTask(id) {
+  const t = data.tasks.find(x => x.id === id);
+  if (t) { t.completed = !t.completed; saveData(); renderTaskList(t.catId); renderCards(); updateStreak(); }
+}
+
+// ========== Streak ==========
+function updateStreak() {
+  const today = new Date().toDateString();
+  const doneToday = data.tasks.some(t => t.completed && new Date(t.completedAt).toDateString() === today);
+  if (doneToday && data.lastCheck !== today) {
+    data.streak += 1;
+    data.lastCheck = today;
+    saveData();
+  }
+  document.getElementById('streakCount').textContent = data.streak;
+}
+
+// ========== Modals ==========
+function openTaskModal(taskId) {
+  editingTaskId = taskId || null;
+  const modal = document.getElementById('taskModal');
+  const catSelect = document.getElementById('taskCategory');
+  catSelect.innerHTML = '<option value="">选择分类</option>' + data.categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+  if (taskId) {
+    const t = data.tasks.find(x => x.id === taskId);
+    document.getElementById('taskModalTitle').textContent = '编辑任务';
+    document.getElementById('taskName').value = t.name;
+    document.getElementById('taskNote').value = t.note.replace(/\n/g, '\n');
+    document.getElementById('taskCategory').value = t.catId;
+    document.getElementById('taskDate').value = t.date;
+    document.getElementById('deleteTaskBtn').style.display = 'flex';
+  } else {
+    document.getElementById('taskModalTitle').textContent = '添加任务';
+    document.getElementById('taskName').value = '';
+    document.getElementById('taskNote').value = '';
+    document.getElementById('taskCategory').value = currentCat || '';
+    document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('deleteTaskBtn').style.display = 'none';
+  }
+  modal.classList.add('active');
+}
+function saveTask() {
+  const name = document.getElementById('taskName').value.trim();
+  const note = document.getElementById('taskNote').value.trim();
+  const catId = document.getElementById('taskCategory').value;
+  const date = document.getElementById('taskDate').value;
+  if (!name || !catId) { alert('请填写任务名称和选择分类'); return; }
+  if (editingTaskId) {
+    const t = data.tasks.find(x => x.id === editingTaskId);
+    t.name = name; t.note = note; t.catId = catId; t.date = date;
+  } else {
+    data.tasks.push({ id: 't'+Date.now(), catId, name, note, date, completed: false });
+  }
+  saveData(); closeModal('taskModal');
+  if (currentCat) renderTaskList(currentCat); else { renderCards(); renderTimeline(); }
+}
+function deleteCurrentTask() {
+  if (!editingTaskId) return;
+  data.tasks = data.tasks.filter(x => x.id !== editingTaskId);
+  saveData(); closeModal('taskModal');
+  if (currentCat) renderTaskList(currentCat); else renderCards();
+}
+
+function openCategoryModal() {
+  editingCatId = null;
+  document.getElementById('catModalTitle').textContent = '添加分类';
+  document.getElementById('catName').value = '';
+  document.getElementById('catIcon').value = '';
+  document.getElementById('catColor').value = 'pink';
+  document.getElementById('deleteCatBtn').style.display = 'none';
+  document.getElementById('catModal').classList.add('active');
+}
+function editCategory(catId) {
+  editingCatId = catId;
+  const c = data.categories.find(x => x.id === catId);
+  document.getElementById('catModalTitle').textContent = '编辑分类';
+  document.getElementById('catName').value = c.name;
+  document.getElementById('catIcon').value = c.icon;
+  document.getElementById('catColor').value = c.color;
+  document.getElementById('deleteCatBtn').style.display = 'flex';
+  document.getElementById('catModal').classList.add('active');
+}
+function saveCategory() {
+  const name = document.getElementById('catName').value.trim();
+  const icon = document.getElementById('catIcon').value.trim() || '📁';
+  const color = document.getElementById('catColor').value;
+  if (!name) { alert('请输入分类名称'); return; }
+  if (editingCatId) {
+    const c = data.categories.find(x => x.id === editingCatId);
+    c.name = name; c.icon = icon; c.color = color;
+  } else {
+    data.categories.push({ id: 'c'+Date.now(), name, icon, color, desc: '', total: 10 });
+  }
+  saveData(); closeModal('catModal');
+  renderCategories(); renderCards();
+}
+function deleteCurrentCategory() {
+  if (!editingCatId) return;
+  data.categories = data.categories.filter(x => x.id !== editingCatId);
+  data.tasks = data.tasks.filter(x => x.catId !== editingCatId);
+  saveData(); closeModal('catModal');
+  renderCategories(); renderCards();
+  if (currentCat === editingCatId) showDashboard();
+}
+function closeModal(id) { document.getElementById(id).classList.remove('active'); editingTaskId=null; }
+
+// ========== WorkBuddy Integration ==========
+function importFromWorkBuddy(jsonStr) {
+  try {
+    const imported = JSON.parse(jsonStr);
+    if (imported.tasks) {
+      imported.tasks.forEach(t => {
+        const existing = data.tasks.find(x => x.id === t.id);
+        if (existing) { Object.assign(existing, t); }
+        else { data.tasks.push(t); }
+      });
+    }
+    if (imported.categories) {
+      imported.categories.forEach(c => {
+        const existing = data.categories.find(x => x.id === c.id);
+        if (!existing) data.categories.push(c);
+      });
+    }
+    saveData(); init();
+    alert('已从 WorkBuddy 同步数据！');
+  } catch(e) { alert('导入失败，请检查数据格式'); }
+}
+
+// ========== PWA ==========
+if ('serviceWorker' in navigator) {
+  const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));`;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+
+// Start
+init();
+</script>
+</body>
+</html>
