@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#F8BBD0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>我的成长工作台</title>
+<style>
+  :root {
+    --bg: #FFF5F7;
+    --card: #FFFFFF;
+    --pink: #F8BBD0;
+    --pink-light: #FCE4EC;
+    --pink-dark: #F06292;
+    --blue: #BBDEFB;
+    --blue-light: #E3F2FD;
+    --blue-dark: #42A5F5;
+    --cyan: #B2EBF2;
+    --cyan-light: #E0F7FA;
+    --green: #C8E6C9;
+    --green-light: #E8F5E9;
+    --text: #4A4A4A;
+    --text-light: #888888;
+    --shadow: rgba(0,0,0,0.06);
+    --shadow-hover: rgba(0,0,0,0.1);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 100px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hero-quote {
+    background: linear-gradient(135deg, var(--pink-light) 0%, var(--blue-light) 100%);
+    padding: 28px 20px 24px;
+    text-align: center;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-quote .quote-text {
+    font-size: 19px;
+    font-weight: 600;
+    color: #5D4037;
+    line-height: 1.7;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-quote .quote-source {
+    font-size: 13px;
+    color: var(--text-light);
+    position: relative;
+    z-index: 1;
+  }
+  .date-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+  .date-chip {
+    background: var(--card);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    box-shadow: 0 2px 8px var(--shadow);
+    font-weight: 500;
+  }
+  .streak {
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--card);
+    padding: 6px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    padding: 0 16px;
+    margin: 24px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--pink-dark);
+  }
+  .clickable-card {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+  }
+  .clickable-card:active { transform: scale(0.98); }
+  .clickable-card .chevron {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--text-light);
+    transition: transform 0.2s ease;
+  }
+  .clickable-card.expanded .chevron {
+    transform: translateY(-50%) rotate(180deg);
+  }
+  .news-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 16px;
+    margin-bottom: 4px;
+  }
+  .news-card {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    box-shadow: 0 4px 16px var(--shadow);
+    border-top: 4px solid var(--blue-dark);
+  }
+  .news-card.pink { border-top-color: var(--pink-dark); }
+  .news-card .news-tag {
+    font-size: 11px;
+    color: var(--blue-dark);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .news-card.pink .news-tag { color: var(--pink-dark); }
+  .news-card .news-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .news-card .news-summary {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+  .news-detail {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 0 16px 12px;
+    box-shadow: 0 4px 16px var(--shadow);
+    display: none;
+    animation: slideDown 0.25s ease;
+    border-left: 4px solid var(--blue-dark);
+  }
+  .news-detail.pink { border-left-color: var(--pink-dark); }
+  .news-detail.show { display: block; }
+  .news-detail h4 {
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .news-detail p {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .news-detail .tag-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .news-detail .tag-row span {
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  .news-detail.pink .tag-row span { background: var(--pink-light); color: var(--pink-dark); }
+  .reading-card {
+    background: linear-gradient(135deg, var(--pink-light), #fff);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 0 16px 12px;
+    box-shadow: 0 4px 16px var(--shadow);
+    border: 1px solid var(--pink);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    position: relative;
+  }
+  .reading-card:active { transform: scale(0.98); }
+  .reading-card .read-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .reading-card .read-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .reading-card .read-meta {
+    font-size: 11px;
+    color: var(--text-light);
+    background: #fff;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+  .reading-card .read-excerpt {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #5D4037;
+  }
+  .reading-detail {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 0 16px 12px;
+    box-shadow: 0 4px 16px var(--shadow);
+    display: none;
+    animation: slideDown 0.25s ease;
+    border-left: 4px solid var(--pink-dark);
+  }
+  .reading-detail.show { display: block; }
+  .reading-detail .full-text {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .reading-detail .action-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--bg);
+  }
+  .reading-detail .action-bar button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+    color: #fff;
+  }
+  .btn-secondary {
+    background: var(--pink-light);
+    color: var(--pink-dark);
+  }
+  .tip-card {
+    background: var(--blue-light);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 0 16px 12px;
+    box-shadow: 0 4px 16px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    position: relative;
+    border: 1px solid var(--cyan);
+  }
+  .tip-card:active { transform: scale(0.98); }
+  .tip-card .tip-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1565C0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tip-card .tip-content {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .tip-detail {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 0 16px 12px;
+    box-shadow: 0 4px 16px var(--shadow);
+    display: none;
+    animation: slideDown 0.25s ease;
+    border-left: 4px solid var(--blue-dark);
+  }
+  .tip-detail.show { display: block; }
+  .tip-detail .tip-full {
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text);
+  }
+  .tip-detail .practice-box {
+    background: var(--blue-light);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+  .tip-detail .practice-box .label {
+    font-size: 12px;
+    color: var(--blue-dark);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .tip-detail .practice-box .content {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .blog-list { padding: 0 16px; }
+  .blog-item {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 10px var(--shadow);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .blog-item:active { transform: scale(0.98); }
+  .blog-item .blog-num {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: #fff; flex-shrink: 0;
+  }
+  .blog-item .blog-body { flex: 1; }
+  .blog-item .blog-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .blog-item .blog-why { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+  .blog-detail {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 0 16px 10px;
+    box-shadow: 0 4px 16px var(--shadow);
+    display: none;
+    animation: slideDown 0.25s ease;
+    border-left: 4px solid var(--pink-dark);
+  }
+  .blog-detail.show { display: block; }
+  .blog-detail p {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .blog-detail a {
+    color: var(--blue-dark);
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .task-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 16px;
+    margin-bottom: 4px;
+  }
+  .task-card {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    box-shadow: 0 4px 16px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .task-card::before {
+    content: ''; position: absolute; top:0; left:0; right:0; height: 4px;
+    background: var(--accent, var(--pink));
+  }
+  .task-card:active { transform: scale(0.98); }
+  .task-card .card-icon { font-size: 28px; margin-bottom: 8px; }
+  .task-card .card-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .task-card .card-desc { font-size: 12px; color: var(--text-light); }
+  .task-card .card-progress {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-light);
+    background: var(--bg);
+    padding: 3px 8px;
+    border-radius: 8px;
+    display: inline-block;
+  }
+  .task-panel {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 0 16px 16px;
+    box-shadow: 0 4px 16px var(--shadow);
+    display: none;
+    animation: slideDown 0.25s ease;
+  }
+  .task-panel.show { display: block; }
+  .task-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--bg);
+  }
+  .task-panel-header h3 {
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-panel-header .close-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .day-list, .week-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .day-item, .week-item {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .day-item:hover, .week-item:hover { background: #f0ece4; }
+  .day-item .check-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--text-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .day-item.done .check-circle {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .day-item .day-info { flex: 1; }
+  .day-item .day-name { font-size: 14px; font-weight: 600; }
+  .day-item .day-sub { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .day-item .day-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: var(--pink-light);
+    color: var(--pink-dark);
+    font-weight: 500;
+  }
+  .day-item.done .day-status {
+    background: var(--green-light);
+    color: #2E7D32;
+  }
+  .task-detail-view {
+    display: none;
+  }
+  .task-detail-view.show { display: block; animation: slideDown 0.25s ease; }
+  .task-detail-view .back-btn {
+    background: var(--bg);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .task-detail-view h4 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .task-detail-view .detail-section {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .task-detail-view .detail-section .label {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .task-detail-view .detail-section .content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .task-detail-view .detail-section ol, .task-detail-view .detail-section ul {
+    padding-left: 18px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text);
+  }
+  .task-detail-view .detail-section li { margin-bottom: 4px; }
+  .task-detail-view .complete-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .task-detail-view .complete-btn.done {
+    background: var(--green);
+  }
+  .timeline {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 0 16px 16px;
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+  .timeline-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .timeline-items { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .timeline-item {
+    min-width: 100px;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    border: 2px solid transparent;
+  }
+  .timeline-item.active {
+    border-color: var(--pink);
+    background: var(--pink-light);
+  }
+  .timeline-item .t-time { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+  .timeline-item .t-name { font-size: 13px; font-weight: 600; }
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 11px;
+    color: var(--text-light);
+  }
+  .nav-item.active {
+    color: var(--pink-dark);
+    background: var(--pink-light);
+  }
+  .nav-item .nav-icon { font-size: 22px; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fab {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink-dark), var(--pink));
+    color: #fff;
+    border: none;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(248, 187, 208, 0.5);
+    cursor: pointer;
+    z-index: 99;
+  }
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 200;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-content {
+    background: var(--card);
+    width: 100%;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-content h3 { margin-bottom: 16px; font-size: 18px; }
+  .modal-content input, .modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid var(--bg);
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 12px;
+    font-family: inherit;
+  }
+  .modal-content input:focus, .modal-content textarea:focus {
+    outline: none;
+    border-color: var(--pink);
+  }
+  .modal-content .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .modal-content .modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-cancel { background: var(--bg); color: var(--text); }
+  .btn-save { background: var(--pink-dark); color: #fff; }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="hero-quote">
+  <div class="quote-text" id="quoteText">"种一棵树最好的时间是十年前，其次是现在。"</div>
+  <div class="quote-source" id="quoteSource">—— 丹比萨·莫约</div>
+</div>
+
+<div class="date-bar">
+  <div class="date-chip" id="dateChip">📅 加载中...</div>
+  <div class="streak" id="streak">🔥 连续 0 天</div>
+</div>
+
+<div class="section-title"><span class="dot"></span>📰 今日资讯 <span style="font-size:12px;color:var(--text-light);font-weight:400;margin-left:auto;">点击展开详情</span></div>
+<div class="news-grid">
+  <div class="news-card pink clickable-card" onclick="toggleDetail('finance')">
+    <div class="news-tag">📊 金融早报</div>
+    <div class="news-title">银行降息了，存款还划算吗？</div>
+    <div class="news-summary">多家银行下调存款利率，10万存一年利息少了几百块...</div>
+    <span class="chevron">▼</span>
+  </div>
+  <div class="news-card clickable-card" onclick="toggleDetail('politics')">
+    <div class="news-tag">📰 时政简报</div>
+    <div class="news-title">多地出台租房新规</div>
+    <div class="news-summary">北京、上海等地加强租房市场监管...</div>
+    <span class="chevron">▼</span>
+  </div>
+</div>
+
+<div class="news-detail pink" id="finance-detail">
+  <h4>🏦 银行降息深度解读</h4>
+  <p><strong>发生了什么：</strong>2024年以来，多家国有大行和股份制银行陆续下调存款利率，一年期定期存款利率从2%左右降至1.5%以下。</p>
+  <p><strong>和你有什么关系：</strong>如果你把10万元存一年定期，利息从2000元降到了1500元左右，少了500块。这意味着"钱生钱"的速度变慢了。</p>
+  <p><strong>小白该怎么做：</strong></p>
+  <ol>
+    <li>不要把所有钱都放在活期或定期里</li>
+    <li>了解"货币基金"（如余额宝），收益通常比活期高</li>
+    <li>先学基础知识，再考虑其他投资方式</li>
+  </ol>
+  <div class="tag-row">
+    <span>降息</span><span>存款</span><span>理财入门</span>
+  </div>
+</div>
+
+<div class="news-detail" id="politics-detail">
+  <h4>🏠 租房新规要点</h4>
+  <p><strong>核心变化：</strong>北京、上海、深圳等地陆续出台租房市场监管新规，明确押金退还时限、租金涨幅限制、中介费标准等。</p>
+  <p><strong>租客权益：</strong></p>
+  <ol>
+    <li>押金必须在退租后7个工作日内退还</li>
+    <li>年租金涨幅不得超过5%</li>
+    <li>中介费不得超过一个月租金</li>
+  </ol>
+  <p><strong>为什么关注：</strong>租房是大多数年轻人的第一大支出，了解政策能帮你省冤枉钱、避坑。</p>
+  <div class="tag-row">
+    <span>租房</span><span>政策</span><span>民生</span>
+  </div>
+</div>
+
+<div class="section-title"><span class="dot" style="background:var(--pink-dark)"></span>🎙️ 今日朗读 <span style="font-size:12px;color:var(--text-light);font-weight:400;margin-left:auto;">点击展开全文</span></div>
+<div class="reading-card" onclick="toggleDetail('reading')">
+  <div class="read-header">
+    <div class="read-title">《背影》节选</div>
+    <div class="read-meta">朱自清 · 约500字 · 3分钟</div>
+  </div>
+  <div class="read-excerpt">他用两手攀着上面，两脚再向上缩；他肥胖的身子向左微倾，显出努力的样子...</div>
+  <span class="chevron" style="right:14px;top:auto;bottom:14px;transform:none;">▼</span>
+</div>
+
+<div class="reading-detail" id="reading-detail">
+  <div class="full-text">他用两手攀着上面，两脚再向上缩；他肥胖的身子向左微倾，显出努力的样子。这时我看见他的背影，我的泪很快地流下来了。我赶紧拭干了泪，怕他看见，也怕别人看见。
+
+我再向外看时，他已抱了朱红的橘子往回走了。过铁道时，他先将橘子散放在地上，自己慢慢爬下，再抱起橘子走。到这边时，我赶紧去搀他。他和我走到车上，将橘子一股脑儿放在我的皮大衣上。于是扑扑衣上的泥土，心里很轻松似的。
+
+过一会儿说："我走了，到那边来信！"我望着他走出去。他走了几步，回过头看见我，说："进去吧，里边没人。"等他的背影混入来来往往的人里，再找不着了，我便进来坐下，我的眼泪又来了。
+
+—— 朱自清《背影》</div>
+  <div class="action-bar">
+    <button class="btn-secondary" onclick="event.stopPropagation();alert('已复制全文，可粘贴到朗读App')">📋 复制全文</button>
+    <button class="btn-primary" onclick="event.stopPropagation();markDone('reading')">✅ 标记完成</button>
+  </div>
+</div>
+
+<div class="section-title"><span class="dot" style="background:var(--blue-dark)"></span>💬 今日表达力 <span style="font-size:12px;color:var(--text-light);font-weight:400;margin-left:auto;">点击展开技巧</span></div>
+<div class="tip-card" onclick="toggleDetail('tip')">
+  <div class="tip-title">💡 把"但是"换成"同时"</div>
+  <div class="tip-content">否定别人前先肯定，会让对方更容易接受。今天试着在对话中用一次...</div>
+  <span class="chevron" style="right:14px;top:50%;">▼</span>
+</div>
+
+<div class="tip-detail" id="tip-detail">
+  <div class="tip-full">
+    <p><strong>为什么有效：</strong>"但是"是一个否定信号，会让对方立刻进入防御状态。而"同时"表示你在补充，不是在推翻。</p>
+    <p><strong>对比：</strong></p>
+    <ul>
+      <li>❌ "你说得对，<strong>但是</strong>我觉得..." → 对方只听到"但是"后面的否定</li>
+      <li>✅ "你说得对，<strong>同时</strong>我还有一个角度..." → 对方感到被尊重，愿意听</li>
+    </ul>
+    <p><strong>其他替换词：</strong>"另外"、"而且"、"在此基础上"</p>
+  </div>
+  <div class="practice-box">
+    <div class="label">🎯 今日练习</div>
+    <div class="content">今天在和任何人对话时，当你想说"但是"的时候，刻意换成"同时"。记录一次成功替换的场景，晚上复盘。</div>
+  </div>
+  <div class="action-bar" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--bg);">
+    <button class="btn-primary" style="flex:1;" onclick="markDone('tip')">✅ 今日已练习</button>
+  </div>
+</div>
+
+<div class="section-title"><span class="dot" style="background:#FF8A65"></span>📎 博客精选 <span style="font-size:12px;color:var(--text-light);font-weight:400;margin-left:auto;">点击展开</span></div>
+<div class="blog-list">
+  <div class="blog-item" onclick="toggleBlog(0)">
+    <div class="blog-num">1</div>
+    <div class="blog-body">
+      <div class="blog-title">《为什么越忙越要慢下来》</div>
+      <div class="blog-why">关于时间管理的反直觉思考，适合今天读</div>
+    </div>
+    <span class="chevron" style="position:static;transform:none;font-size:16px;color:var(--text-light);">▼</span>
+  </div>
+  <div class="blog-detail" id="blog-0">
+    <p><strong>核心观点：</strong>忙碌不等于高效。真正的时间管理不是做更多事，而是减少"伪工作"——那些看起来很忙但对目标没有帮助的事。</p>
+    <p><strong>为什么推荐：</strong>作为刚开始系统学习的人，你很容易陷入"我要学很多"的焦虑。这篇文章提醒你：慢下来，反而学得更快。</p>
+    <p><strong>阅读时长：</strong>约8分钟</p>
+    <a href="#" onclick="event.preventDefault();alert('链接已复制，请在浏览器打开')">📖 阅读原文</a>
+  </div>
+
+  <div class="blog-item" onclick="toggleBlog(1)">
+    <div class="blog-num">2</div>
+    <div class="blog-body">
+      <div class="blog-title">《复利思维：普通人的财富加速器》</div>
+      <div class="blog-why">配合本周金融主题，深入浅出讲复利</div>
+    </div>
+    <span class="chevron" style="position:static;transform:none;font-size:16px;color:var(--text-light);">▼</span>
+  </div>
+  <div class="blog-detail" id="blog-1">
+    <p><strong>核心观点：</strong>复利不只是数学公式，它是一种思维方式。每天进步1%，一年后你会强大37倍。</p>
+    <p><strong>为什么推荐：</strong>你正在做的"每天写作、每周学金融"就是在积累复利。这篇文章能帮你理解：为什么每天一点点，长期会很可怕。</p>
+    <p><strong>阅读时长：</strong>约6分钟</p>
+    <a href="#" onclick="event.preventDefault();alert('链接已复制，请在浏览器打开')">📖 阅读原文</a>
+  </div>
+</div>
+
+<div class="section-title"><span class="dot" style="background:var(--green)"></span>✅ 今日任务 <span style="font-size:12px;color:var(--text-light);font-weight:400;margin-left:auto;">点击展开详细计划</span></div>
+<div class="task-grid">
+  <div class="task-card" style="--accent:var(--pink-dark)" onclick="openTaskPanel('write')">
+    <div class="card-icon">✍️</div>
+    <div class="card-title">每日练笔</div>
+    <div class="card-desc">300-500字写作训练</div>
+    <div class="card-progress" id="write-progress">0/7 已完成</div>
+  </div>
+  <div class="task-card" style="--accent:var(--blue-dark)" onclick="openTaskPanel('finance')">
+    <div class="card-icon">💰</div>
+    <div class="card-title">金融小白</div>
+    <div class="card-desc">零基础学金融</div>
+    <div class="card-progress" id="finance-progress">0/8 周</div>
+  </div>
+  <div class="task-card" style="--accent:#66BB6A" onclick="openTaskPanel('edit')">
+    <div class="card-icon">🎬</div>
+    <div class="card-title">剪辑入门</div>
+    <div class="card-desc">剪映从0到1</div>
+    <div class="card-progress" id="edit-progress">0/8 周</div>
+  </div>
+</div>
+
+<div class="task-panel" id="panel-write">
+  <div class="task-panel-header">
+    <h3>✍️ 每日练笔 · 7天计划</h3>
+    <button class="close-btn" onclick="closeAllPanels()">✕</button>
+  </div>
+  <div class="day-list" id="write-day-list"></div>
+</div>
+
+<div class="task-panel" id="panel-finance">
+  <div class="task-panel-header">
+    <h3>💰 金融小白 · 8周计划</h3>
+    <button class="close-btn" onclick="closeAllPanels()">✕</button>
+  </div>
+  <div class="week-list" id="finance-week-list"></div>
+</div>
+
+<div class="task-panel" id="panel-edit">
+  <div class="task-panel-header">
+    <h3>🎬 剪辑入门 · 8周计划</h3>
+    <button class="close-btn" onclick="closeAllPanels()">✕</button>
+  </div>
+  <div class="week-list" id="edit-week-list"></div>
+</div>
+
+<div class="task-panel" id="task-detail-panel">
+  <div class="task-detail-view" id="detail-view"></div>
+</div>
+
+<div class="timeline">
+  <div class="timeline-title">⏰ 每日时间轴</div>
+  <div class="timeline-items">
+    <div class="timeline-item active" id="tl-write"><div class="t-time">19:00</div><div class="t-name">✍️ 写作</div></div>
+    <div class="timeline-item" id="tl-finance"><div class="t-time">周一</div><div class="t-name">💰 金融</div></div>
+    <div class="timeline-item" id="tl-edit"><div class="t-time">周六</div><div class="t-name">🎬 剪辑</div></div>
+    <div class="timeline-item" id="tl-read"><div class="t-time">任意</div><div class="t-name">🎙️ 朗读</div></div>
+    <div class="timeline-item" id="tl-expr"><div class="t-time">任意</div><div class="t-name">💬 表达</div></div>
+  </div>
+</div>
+
+<button class="fab" onclick="openAddModal()">+</button>
+
+<div class="modal-overlay" id="addModal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal-content">
+    <h3>➕ 添加新任务</h3>
+    <input type="text" id="newTaskName" placeholder="任务名称（如：背单词）">
+    <textarea id="newTaskDesc" rows="2" placeholder="任务描述（可选）"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddModal()">取消</button>
+      <button class="btn-save" onclick="saveNewTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="scrollToSection('hero')">
+    <span class="nav-icon">🏠</span>
+    <span>首页</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('news')">
+    <span class="nav-icon">📰</span>
+    <span>资讯</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('reading')">
+    <span class="nav-icon">🎙️</span>
+    <span>朗读</span>
+  </div>
+  <div class="nav-item" onclick="scrollToSection('tasks')">
+    <span class="nav-icon">✅</span>
+    <span>任务</span>
+  </div>
+</div>
+<script>
+const writeData = [
+  { id:"w1", day:"Day 1", date:"8月5日", title:"你最近一次'本来不想做，但做完挺开心'的事", desc:"要求：写出'不想做'和'开心'之间的转折，300-500字。", steps:["找一个具体场景（如早起、运动、整理房间）","写出最开始的心理抗拒","写出做完后的意外收获","控制在300-500字"], note:"完成后回复：Day1写完了，字数xxx" },
+  { id:"w2", day:"Day 2", date:"8月6日", title:"一个你舍不得扔的旧物件", desc:"要求：不写'旧'这个字，用细节让读者感受到它的年代感。", steps:["选一件有故事的物品","描述它的触感/气味/颜色变化","写一件和它有关的具体往事","控制在300-500字"], note:"完成后回复：Day2写完了" },
+  { id:"w3", day:"Day 3", date:"8月7日", title:"一种让你瞬间回到某个场景的味道", desc:"要求：用嗅觉带动回忆，写出画面感。", steps:["先写味道本身（像什么、浓度、温度）","再写这个味道出现的场景","最后写闻到它时你想到的人或事","控制在300-500字"], note:"完成后回复：Day3写完了" },
+  { id:"w4", day:"Day 4", date:"8月8日", title:"今天听到的一句普通的话，为什么停了一下", desc:"要求：写出'普通的话'和'心里一震'之间的落差。", steps:["记录今天听到的一句话","写出说话的人、场景、语气","分析为什么这句话触动了你","控制在300-500字"], note:"完成后回复：Day4写完了" },
+  { id:"w5", day:"Day 5", date:"8月9日", title:"一次'等'——等人/等车/等消息", desc:"要求：写出等待过程中的心理变化。", steps:["写等待开始时的状态","写等待中你做了什么、想了什么","写等待结束时的情绪","控制在300-500字"], note:"完成后回复：Day5写完了" },
+  { id:"w6", day:"Day 6", date:"8月10日", title:"用第二人称劝一个焦虑的朋友", desc:"要求：不用'你要'，用'你可以'。", steps:["想象一个焦虑的朋友","写出他的具体焦虑","用'你可以...'给出建议","控制在300-500字"], note:"完成后回复：Day6写完了" },
+  { id:"w7", day:"Day 7", date:"8月11日", title:"描述你房间里最旧的一样东西，但不要写'旧'", desc:"要求：用细节暗示年代，不出现'旧'字。", steps:["选房间里最有年代感的物品","描述它的磨损、褪色、变形","写它见证过的时间","控制在300-500字"], note:"完成后回复：Day7写完了" }
+];
+
+const financeData = [
+  { id:"f1", week:"第1周", date:"8月11日", title:"信用卡与借记卡", learn:"信用卡和借记卡的本质区别、账单日/还款日、最低还款的坑", source:"B站：老丁是个生意人《信用卡入门》第1-2集", steps:["看视频15分钟","打开支付宝/微信，确认绑的卡类型","回答思考题"], aspects:["银行怎么赚钱","为什么鼓励你分期","对普通人来说是工具还是陷阱"], hw:"如果你信用卡账单1000元，最低还100，剩下的900一个月后要多还多少？（假设日利率0.05%）" },
+  { id:"f2", week:"第2周", date:"8月18日", title:"复利与单利", learn:"复利公式不用背，理解'利滚利'在存款和贷款中的不同效果", source:"《小狗钱钱》第3-4章（微信读书免费）", steps:["读相关章节20分钟","用计算器算：1万元，年利率3%，复利10年后是多少？","回答思考题"], aspects:["时间的朋友","负债的陷阱","为什么越早理财越好"], hw:"为什么贷款复利让你多还钱，存款复利却让你多赚钱？用自己的话解释。" },
+  { id:"f3", week:"第3周", date:"8月25日", title:"通货膨胀", learn:"CPI是什么、为什么钱会越来越不值钱、跑赢通胀的方法", source:"微信读书《富爸爸穷爸爸》第1章 / B站'通胀 10分钟看懂'", steps:["学习20分钟","查中国近5年通胀率大约是多少","回答思考题"], aspects:["现金是贬值资产","哪些资产能抗通胀","为什么工资涨幅跑不过物价"], hw:"如果银行定期利率2%，通胀3%，你存10万一年实际是赚了还是亏了？亏多少？" },
+  { id:"f4", week:"第4周", date:"9月1日", title:"基金入门", learn:"基金是什么、货币基金/债券基金/股票基金的区别、指数基金", source:"B站：巫师财经《基金入门》/ 微信读书《指数基金投资指南》", steps:["学习基金基础概念","打开支付宝'基金'页面，看看有哪些类型","回答思考题"], aspects:["基金经理帮你选股","分散风险","定投策略"], hw:"货币基金和股票基金，哪个风险高？哪个适合新手先尝试？" },
+  { id:"f5", week:"第5周", date:"9月8日", title:"股票基础（只看不动）", learn:"股票是什么、K线图基础、市盈率和市净率、为什么小白不建议炒股", source:"B站：李永乐老师《股票入门》", steps:["看视频了解基础","下载一个股票App（同花顺/东方财富），只看不动","回答思考题"], aspects:["股票是公司所有权","市场波动原理","为什么七亏二平一赚"], hw:"如果你只有1万元，你会选择存银行、买基金、还是买股票？为什么？" },
+  { id:"f6", week:"第6周", date:"9月15日", title:"资产配置", learn:"不要把鸡蛋放一个篮子、标准普尔家庭资产配置图", source:"B站：资产配置入门 / 微信读书《漫步华尔街》", steps:["学习资产配置基础","梳理自己目前的资产（存款/负债）","画一张简单的资产分配图"], aspects:["紧急备用金","稳健投资","风险投资","保险"], hw:"假设你有5万元存款，按照'10%日常+20%保险+30%稳健+40%投资'分配，各放多少？" },
+  { id:"f7", week:"第7周", date:"9月22日", title:"保险基础", learn:"重疾险/医疗险/意外险/寿险的区别、什么时候该买什么", source:"B站：保险科普视频 / 微信读书《你的第一本保险指南》", steps:["了解四大险种区别","评估自己和家人的保险需求","回答思考题"], aspects:["保人还是保钱","消费型vs返还型","先保大人再保小孩"], hw:"一个25岁、单身、有社保的人，最优先应该配置哪种保险？为什么？" },
+  { id:"f8", week:"第8周", date:"9月29日", title:"个人财务体检", learn:"记账方法、资产负债表、收支平衡表、制定下季度财务目标", source:"微信读书《穷爸爸富爸爸》相关章节 / 记账App（随手记/鲨鱼记账）", steps:["下载记账App，记录一周收支","列出自己的资产和负债","制定下季度3个财务目标"], aspects:["钱花去哪了","资产vs负债","被动收入"], hw:"算一下你上个月的'必要支出'和'可选支出'各占多少比例？" }
+];
+
+const editData = [
+  { id:"e1", week:"第1周", date:"8月9日", title:"剪映安装与界面熟悉", learn:"下载剪映专业版、认识时间轴/轨道/素材库/导出按钮", source:"B站：GenJi是真想教会你《剪映专业版入门》第1集", steps:["官网下载剪映专业版并安装","打开软件，不导入素材，纯点击熟悉按钮","导入一段手机拍的10秒视频，尝试播放"], hw:"把这段10秒视频原样导出，文件命名'第1周练习'" },
+  { id:"e2", week:"第2周", date:"8月16日", title:"分割与删除", learn:"剃刀工具、分割点选择、删除多余片段", source:"B站：剪映分割删除教程（搜索前3个视频任选一个）", steps:["导入一段30秒视频","找到5秒处，分割，删除中间5秒","把前后两段拼起来，导出看是否流畅"], hw:"把一段30秒视频剪成15秒精华版" },
+  { id:"e3", week:"第3周", date:"8月23日", title:"转场与节奏", learn:"叠化/闪白/跳切等基本转场、音乐踩点", source:"B站：剪映转场教程 / 剪映官方教程'如何踩点'", steps:["导入两段视频，中间加叠化转场","添加背景音乐，把画面切换点对准鼓点","导出15秒短视频"], hw:"做一段'起床→出门'的15秒快剪，至少用2种转场" },
+  { id:"e4", week:"第4周", date:"8月30日", title:"字幕与花字", learn:"自动识别字幕、手动调整、花字样式、动态字幕", source:"B站：剪映字幕教程 / 剪映官方", steps:["导入一段带说话声的视频","使用自动识别生成字幕","调整字幕出现时间，加花字样式","导出"], hw:"给一段1分钟视频加上完整字幕，至少用2种花字样式" },
+  { id:"e5", week:"第5周", date:"9月6日", title:"调色基础", learn:"滤镜使用、手动调色（亮度/对比度/饱和度/色温）", source:"B站：剪映调色教程 / 剪映官方", steps:["导入一段光线不好的视频","尝试不同滤镜效果","手动调整亮度/对比度/饱和度","对比调色前后效果"], hw:"把一段偏暗的视频调亮，保持自然不夸张" },
+  { id:"e6", week:"第6周", date:"9月13日", title:"音效与配音", learn:"添加音效、录音配音、音量调节、降噪", source:"B站：剪映音效配音教程", steps:["导入一段视频","在关键动作处添加音效（如开门声、脚步声）","尝试录制一段旁白","调整音量和降噪"], hw:"给一段30秒视频添加至少3个音效和一段旁白" },
+  { id:"e7", week:"第7周", date:"9月20日", title:"关键帧动画", learn:"关键帧基础、位置/缩放/透明度动画、简单MG动画", source:"B站：剪映关键帧教程", steps:["导入一张图片","用关键帧让它从左边移动到右边","尝试缩放和透明度变化","导出"], hw:"做一段'图片从远到近、从模糊到清晰'的5秒动画" },
+  { id:"e8", week:"第8周", date:"9月27日", title:"完整作品", learn:"整合前面所有技能，做一支60秒Vlog", source:"无，综合运用", steps:["确定主题（如'我的一天'/'周末探店'）","拍摄/收集素材","按时间线剪辑：导入→分割→加转场→加字幕→调色→加音乐→导出"], hw:"完成一支60秒Vlog，包含：分割、转场、字幕、调色、音乐" }
+];
+
+let completed = JSON.parse(localStorage.getItem('wb_completed') || '{}');
+let customTasks = JSON.parse(localStorage.getItem('wb_customTasks') || '[]');
+
+function saveCompleted() {
+  localStorage.setItem('wb_completed', JSON.stringify(completed));
+  updateProgress();
+}
+
+function updateProgress() {
+  const writeDone = writeData.filter(d => completed[d.id]).length;
+  const financeDone = financeData.filter(d => completed[d.id]).length;
+  const editDone = editData.filter(d => completed[d.id]).length;
+  document.getElementById('write-progress').textContent = writeDone + '/7 已完成';
+  document.getElementById('finance-progress').textContent = financeDone + '/8 周';
+  document.getElementById('edit-progress').textContent = editDone + '/8 周';
+  const streak = parseInt(localStorage.getItem('wb_streak') || '0');
+  document.getElementById('streak').textContent = '🔥 连续 ' + streak + ' 天';
+}
+
+function updateDate() {
+  const d = new Date();
+  const week = ['日','一','二','三','四','五','六'];
+  document.getElementById('dateChip').innerHTML = `📅 ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${week[d.getDay()]}`;
+}
+updateDate();
+updateProgress();
+
+function toggleDetail(type) {
+  const el = document.getElementById(type + '-detail');
+  const card = el.previousElementSibling;
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+    card.classList.remove('expanded');
+  } else {
+    document.querySelectorAll('.news-detail, .reading-detail, .tip-detail').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.clickable-card, .reading-card, .tip-card').forEach(c => c.classList.remove('expanded'));
+    el.classList.add('show');
+    card.classList.add('expanded');
+  }
+}
+
+function toggleBlog(idx) {
+  const el = document.getElementById('blog-' + idx);
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+  } else {
+    document.querySelectorAll('.blog-detail').forEach(d => d.classList.remove('show'));
+    el.classList.add('show');
+  }
+}
+
+function closeAllPanels() {
+  document.querySelectorAll('.task-panel').forEach(p => p.classList.remove('show'));
+  document.getElementById('detail-view').innerHTML = '';
+  document.getElementById('detail-view').classList.remove('show');
+}
+
+function openTaskPanel(type) {
+  closeAllPanels();
+  const panel = document.getElementById('panel-' + type);
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (type === 'write') renderWriteList();
+  if (type === 'finance') renderFinanceList();
+  if (type === 'edit') renderEditList();
+}
+
+function renderWriteList() {
+  const container = document.getElementById('write-day-list');
+  container.innerHTML = writeData.map(d => `
+    <div class="day-item ${completed[d.id] ? 'done' : ''}" onclick="showWriteDetail('${d.id}')">
+      <div class="check-circle">${completed[d.id] ? '✓' : ''}</div>
+      <div class="day-info">
+        <div class="day-name">${d.day} · ${d.date}</div>
+        <div class="day-sub">${d.title}</div>
+      </div>
+      <div class="day-status">${completed[d.id] ? '已完成' : '待开始'}</div>
+    </div>
+  `).join('');
+}
+
+function renderFinanceList() {
+  const container = document.getElementById('finance-week-list');
+  container.innerHTML = financeData.map(d => `
+    <div class="day-item ${completed[d.id] ? 'done' : ''}" onclick="showFinanceDetail('${d.id}')">
+      <div class="check-circle">${completed[d.id] ? '✓' : ''}</div>
+      <div class="day-info">
+        <div class="day-name">${d.week} · ${d.date}</div>
+        <div class="day-sub">${d.title}</div>
+      </div>
+      <div class="day-status">${completed[d.id] ? '已完成' : '待开始'}</div>
+    </div>
+  `).join('');
+}
+
+function renderEditList() {
+  const container = document.getElementById('edit-week-list');
+  container.innerHTML = editData.map(d => `
+    <div class="day-item ${completed[d.id] ? 'done' : ''}" onclick="showEditDetail('${d.id}')">
+      <div class="check-circle">${completed[d.id] ? '✓' : ''}</div>
+      <div class="day-info">
+        <div class="day-name">${d.week} · ${d.date}</div>
+        <div class="day-sub">${d.title}</div>
+      </div>
+      <div class="day-status">${completed[d.id] ? '已完成' : '待开始'}</div>
+    </div>
+  `).join('');
+}
+
+function showWriteDetail(id) {
+  const d = writeData.find(x => x.id === id);
+  if (!d) return;
+  const panel = document.getElementById('task-detail-panel');
+  const view = document.getElementById('detail-view');
+  view.innerHTML = `
+    <button class="back-btn" onclick="closeAllPanels(); openTaskPanel('write')">← 返回列表</button>
+    <h4>✍️ ${d.day} · ${d.title}</h4>
+    <div class="detail-section">
+      <div class="label">📝 今日任务</div>
+      <div class="content">${d.desc}</div>
+    </div>
+    <div class="detail-section">
+      <div class="label">📋 写作步骤</div>
+      <ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+    </div>
+    <div class="detail-section">
+      <div class="label">💬 完成后回复</div>
+      <div class="content">${d.note}</div>
+    </div>
+    <button class="complete-btn ${completed[id] ? 'done' : ''}" onclick="toggleComplete('${id}', this)">
+      ${completed[id] ? '✅ 已完成' : '✅ 标记完成'}
+    </button>
+  `;
+  closeAllPanels();
+  panel.classList.add('show');
+  view.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showFinanceDetail(id) {
+  const d = financeData.find(x => x.id === id);
+  if (!d) return;
+  const panel = document.getElementById('task-detail-panel');
+  const view = document.getElementById('detail-view');
+  view.innerHTML = `
+    <button class="back-btn" onclick="closeAllPanels(); openTaskPanel('finance')">← 返回列表</button>
+    <h4>💰 ${d.week} · ${d.title}</h4>
+    <div class="detail-section">
+      <div class="label">📖 本周学什么</div>
+      <div class="content">${d.learn}</div>
+    </div>
+    <div class="detail-section">
+      <div class="label">📺 从哪学</div>
+      <div class="content">${d.source}</div>
+    </div>
+    <div class="detail-section">
+      <div class="label">📝 分几步</div>
+      <ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+    </div>
+    <div class="detail-section">
+      <div class="label">🔍 从哪几方面理解</div>
+      <ul>${d.aspects.map(a => `<li>${a}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-section">
+      <div class="label">🎯 本周作业</div>
+      <div class="content">${d.hw}</div>
+    </div>
+    <button class="complete-btn ${completed[id] ? 'done' : ''}" onclick="toggleComplete('${id}', this)">
+      ${completed[id] ? '✅ 已完成' : '✅ 标记完成'}
+    </button>
+  `;
+  closeAllPanels();
+  panel.classList.add('show');
+  view.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showEditDetail(id) {
+  const d = editData.find(x => x.id === id);
+  if (!d) return;
+  const panel = document.getElementById('task-detail-panel');
+  const view = document.getElementById('detail-view');
+  view.innerHTML = `
+    <button class="back-btn" onclick="closeAllPanels(); openTaskPanel('edit')">← 返回列表</button>
+    <h4>🎬 ${d.week} · ${d.title}</h4>
+    <div class="detail-section">
+      <div class="label">📖 本周学什么</div>
+      <div class="content">${d.learn}</div>
+    </div>
+    <div class="detail-section">
+      <div class="label">📺 从哪学</div>
+      <div class="content">${d.source}</div>
+    </div>
+    <div class="detail-section">
+      <div class="label">📝 分几步</div>
+      <ol>${d.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+    </div>
+    <div class="detail-section">
+      <div class="label">🎯 练习作业</div>
+      <div class="content">${d.hw}</div>
+    </div>
+    <button class="complete-btn ${completed[id] ? 'done' : ''}" onclick="toggleComplete('${id}', this)">
+      ${completed[id] ? '✅ 已完成' : '✅ 标记完成'}
+    </button>
+  `;
+  closeAllPanels();
+  panel.classList.add('show');
+  view.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleComplete(id, btn) {
+  if (completed[id]) {
+    delete completed[id];
+    btn.textContent = '✅ 标记完成';
+    btn.classList.remove('done');
+  } else {
+    completed[id] = true;
+    btn.textContent = '✅ 已完成';
+    btn.classList.add('done');
+    let streak = parseInt(localStorage.getItem('wb_streak') || '0');
+    localStorage.setItem('wb_streak', (streak + 1).toString());
+  }
+  saveCompleted();
+}
+
+function markDone(type) {
+  alert('已标记完成！继续保持 💪');
+}
+
+function openAddModal() {
+  document.getElementById('addModal').classList.add('show');
+}
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('show');
+}
+function saveNewTask() {
+  const name = document.getElementById('newTaskName').value.trim();
+  const desc = document.getElementById('newTaskDesc').value.trim();
+  if (!name) { alert('请输入任务名称'); return; }
+  customTasks.push({ id: 'c' + Date.now(), name, desc, completed: false });
+  localStorage.setItem('wb_customTasks', JSON.stringify(customTasks));
+  closeAddModal();
+  alert('任务已添加！');
+  document.getElementById('newTaskName').value = '';
+  document.getElementById('newTaskDesc').value = '';
+}
+
+function scrollToSection(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if (id === 'hero') window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 'news') {
+    const el = document.querySelector('.news-grid');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if (id === 'reading') {
+    const el = document.querySelector('.reading-card');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if (id === 'tasks') {
+    const el = document.querySelector('.task-grid');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+</script>
+</body>
+</html>
